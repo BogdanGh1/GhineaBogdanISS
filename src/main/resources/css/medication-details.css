@@ -1,0 +1,36 @@
+AnchorPane {
+    -fx-background-color: #9791c1
+}
+
+.button {
+    -fx-background-color: #604fc7;
+    -fx-background-insets: 0;
+}
+
+.button .text {
+    -fx-font-family: "Helvetica", Sans-serif;
+    -fx-font-weight: Bold;
+    -fx-font-size: 15px;
+    -fx-fill: white;
+}
+
+.label .text {
+    -fx-font-family: "Helvetica", Sans-serif;
+    -fx-font-size: 15px;
+    -fx-fill: black;
+}
+
+#titleLabel .text {
+    -fx-font-family: "Helvetica", Sans-serif;
+    -fx-font-weight: Bold;
+    -fx-font-size: 30px;
+    -fx-fill: white;
+    -fx-stroke-width: 1px;
+    -fx-stroke: black;
+}
+
+.text-field {
+    -fx-background-insets: 0;
+    -fx-background-radius: 3px;
+    -fx-background-color: white;
+}
