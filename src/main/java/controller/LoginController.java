@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import services.exceptions.ServicesException;
 import services.Services;
 
@@ -58,6 +59,7 @@ public class LoginController extends GenericController {
                     case Pharmacist -> {
                     }
                     case MedicalPersonnel -> {
+                        initiateMedicalPersonnelLoginProcedure(loggedUser);
                     }
                 }
                 stage.hide();
@@ -77,5 +79,10 @@ public class LoginController extends GenericController {
     private void initiateAdminLoginProcedure(User admin) throws IOException {
         AdminController adminController = new AdminController(admin, services, new javafx.stage.Stage(), this.stage);
         adminController.initiateViewMenuProcedure();
+    }
+
+    private void initiateMedicalPersonnelLoginProcedure(User loggedUser) throws IOException {
+        MedicalPersonnelController medicalPersonnelController = new MedicalPersonnelController(loggedUser, services, new Stage(), this.stage);
+        medicalPersonnelController.initializeViewMenuProcedure();
     }
 }

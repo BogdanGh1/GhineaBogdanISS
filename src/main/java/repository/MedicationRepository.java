@@ -32,4 +32,34 @@ public class MedicationRepository {
         }
     }
 
+    public Medication find(Integer id) {
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            Medication medication = session.find(Medication.class, id);
+            session.getTransaction().commit();
+            return medication;
+        }
+    }
+
+    public void delete(Medication medication) {
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            session.remove(medication);
+            session.getTransaction().commit();
+        }
+    }
+
+    public void modify(Medication newMedication) {
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            Medication oldMedication = session.getReference(newMedication);
+            oldMedication.setName(newMedication.getName());
+            oldMedication.setDescription(newMedication.getDescription());
+            oldMedication.setProducer(newMedication.getProducer());
+            oldMedication.setStock(newMedication.getStock());
+            session.persist(oldMedication);
+            session.getTransaction().commit();
+        }
+    }
+
 }

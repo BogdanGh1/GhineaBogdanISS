@@ -1,10 +1,11 @@
 package domain.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
+
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "medications")
 public class Medication {
@@ -18,6 +19,11 @@ public class Medication {
     private String producer;
     private Integer stock;
     private String description;
+
+    @OneToMany(mappedBy = "medication", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderMedication> orders = new ArrayList<>();
+
+
     public Medication() {
     }
 
@@ -74,5 +80,13 @@ public class Medication {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public List<OrderMedication> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<OrderMedication> orders) {
+        this.orders = orders;
     }
 }
