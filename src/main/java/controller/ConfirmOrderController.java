@@ -11,7 +11,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
@@ -21,9 +21,9 @@ import services.Services;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.format.DateTimeFormatter;
+import java.util.List;
 
-public class OrderDetailsController extends GenericController {
+public class ConfirmOrderController extends GenericController {
 
     @FXML
     private TableView<MedicationDTO> medicationsTable;
@@ -33,34 +33,23 @@ public class OrderDetailsController extends GenericController {
     private TableColumn<MedicationDTO, String> medicationProducerColumn;
     @FXML
     private TableColumn<MedicationDTO, String> medicationQuantityColumn;
-    @FXML
-    private Label sectionLabel;
-    @FXML
-    private Label timestampLabel;
-    @FXML
-    private Label statusLabel;
-    private final ObservableList<MedicationDTO> medicationsModel = FXCollections.observableArrayList();
+    private final GenericController parentController;
     private final Order order;
+    private final ObservableList<MedicationDTO> medicationsModel = FXCollections.observableArrayList();
 
-    public OrderDetailsController(User loggedUser, Services services, Stage stage, Order order) {
+    public ConfirmOrderController(User loggedUser, Services services, Stage stage, GenericController parentController, Order order) {
         super(loggedUser, services, stage);
+        this.parentController = parentController;
         this.order = order;
     }
-
-    public OrderDetailsController(Services services, Stage stage, Order order) {
-        super(services, stage);
-        this.order = order;
-    }
-
 
     public void initialize() {
         updateMedicationsModel();
         initializeMedicationsTable();
-        initializeLabels();
     }
 
-    public void initiateViewOrderProcedure() throws IOException {
-        URL path = this.getClass().getResource("../fxml/order-details.fxml");
+    public void initiateConfirmOrderProcedure() throws IOException {
+        URL path = this.getClass().getResource("../fxml/confirm-order.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(path);
         fxmlLoader.setController(this);
 
@@ -71,20 +60,33 @@ public class OrderDetailsController extends GenericController {
         stage.show();
     }
 
-    public void initiateViewOrderDetailsProcedure() throws IOException {
-        URL path = this.getClass().getResource("../fxml/order-details.fxml");
-        FXMLLoader fxmlLoader = new FXMLLoader(path);
-        fxmlLoader.setController(this);
+    @FXML
+    public void handleConfirmOrder() {
+        services.confirmOrder(order);
+        parentController.refresh();
+        stage.close();
+    }
 
-        Parent root = fxmlLoader.load();
-        stage.setScene(new Scene(root));
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setTitle("Medication Details");
-        stage.show();
+    @FXML
+    public void handleIncompleteOrder() {
+        if (!medicationsTable.getSelectionModel().isEmpty()) {
+            List<MedicationDTO> medicationDTOs = medicationsTable.getSelectionModel().getSelectedItems();
+            services.placeIncompleteOrder(order, medicationDTOs);
+            parentController.refresh();
+            stage.close();
+        }
+        else{
+            stage.close();
+        }
+    }
+
+    public void refresh() {
+        updateMedicationsModel();
     }
 
     private void initializeMedicationsTable() {
         medicationsTable.setItems(medicationsModel);
+        medicationsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         medicationsTable.setRowFactory(tv -> {
             TableRow<MedicationDTO> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
@@ -108,21 +110,11 @@ public class OrderDetailsController extends GenericController {
         }
     }
 
-    public void refresh() {
-        updateMedicationsModel();
-    }
-
     private void updateMedicationsModel() {
         medicationsModel.setAll(
                 order.getMedications().stream()
                         .map(om -> new MedicationDTO(om.getMedication(), om.getQuantity()))
                         .toList()
         );
-    }
-
-    private void initializeLabels() {
-        sectionLabel.setText(order.getMedicalSection());
-        timestampLabel.setText(order.getTimestamp().format(DateTimeFormatter.ofPattern("HH:mm yy-MM-dd")));
-        statusLabel.setText(order.getStatus().toString());
     }
 }

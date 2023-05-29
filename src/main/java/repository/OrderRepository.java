@@ -61,4 +61,22 @@ public class OrderRepository {
             session.getTransaction().commit();
         }
     }
+
+    public List<Order> getAllOrdersByStatus(OrderStatus orderStatus) {
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            List<Order> orders = session.createQuery(
+                            "select o " +
+                                    "from Order o " +
+                                    "join fetch o.medications om " +
+                                    "join fetch om.medication " +
+                                    "where o.status = :orderStatus " +
+                                    "order by o.timestamp desc ",
+                            Order.class
+                    ).setParameter("orderStatus", orderStatus)
+                    .getResultList();
+            session.getTransaction().commit();
+            return orders;
+        }
+    }
 }

@@ -69,6 +69,17 @@ public class Services {
         return allOrders;
     }
 
+    public List<Order> getAllOrders() {
+        List<Order> allOrders = new ArrayList<>();
+        allOrders.addAll(orderRepository.getAllOrdersByStatus(OrderStatus.PlacedPriority));
+        allOrders.addAll(orderRepository.getAllOrdersByStatus(OrderStatus.Placed));
+        allOrders.addAll(orderRepository.getAllOrdersByStatus(OrderStatus.Honored));
+        allOrders.addAll(orderRepository.getAllOrdersByStatus(OrderStatus.Confirmed));
+        allOrders.addAll(orderRepository.getAllOrdersByStatus(OrderStatus.ConfirmedIncomplete));
+        allOrders.addAll(orderRepository.getAllOrdersByStatus(OrderStatus.Cancelled));
+        return allOrders;
+    }
+
     public void addOrder(String medicalSection, List<MedicationDTO> medicationDTOs) {
         Order order = new Order(medicalSection, LocalDateTime.now(), OrderStatus.Placed);
         medicationDTOs.forEach(x -> {
@@ -89,6 +100,29 @@ public class Services {
             medicationRepository.modify(x.getMedication());
         });
         orderRepository.modify(order);
+    }
+
+    public void honorOrder(Order order) {
+        order.setStatus(OrderStatus.Honored);
+        orderRepository.modify(order);
+    }
+
+    public void confirmOrder(Order order) {
+        order.setStatus(OrderStatus.Confirmed);
+        orderRepository.modify(order);
+    }
+
+    public void placeIncompleteOrder(Order order, List<MedicationDTO> medicationDTOs) {
+        order.setStatus(OrderStatus.ConfirmedIncomplete);
+        orderRepository.modify(order);
+        Order newOrder = new Order(order.getMedicalSection(), LocalDateTime.now(), OrderStatus.PlacedPriority);
+        orderRepository.add(newOrder, medicationDTOs);
+    }
+
+    public void modifyMedication(Integer id, String name, String producer, Integer stock, String description) {
+        Medication medication = new Medication(id, name, producer, stock, description);
+        MedicationValidator.validate(medication);
+        medicationRepository.modify(medication);
     }
 
 }

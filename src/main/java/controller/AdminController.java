@@ -34,9 +34,14 @@ public class AdminController extends GenericController {
     @FXML
     private final Stage loginStage;
 
-    public AdminController(User loggedUser, Services services, Stage stage, Stage loginStage) {
+    public AdminController(User loggedUser, Services services, javafx.stage.Stage stage, Stage loginStage) {
         super(loggedUser, services, stage);
         this.loginStage = loginStage;
+    }
+
+    public void initialize() {
+        updateMedicationsModel();
+        initializeMedicationsTable();
     }
 
     @FXML
@@ -45,6 +50,7 @@ public class AdminController extends GenericController {
         loginStage.show();
     }
 
+    @FXML
     public void initiateAddMedicationProcedure() {
         MedicationDetailsController medicationDetailsController = new MedicationDetailsController(services, new Stage(), new Medication(), this);
         try {
@@ -52,11 +58,6 @@ public class AdminController extends GenericController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void initialize() {
-        updateMedicationsModel();
-        initializeMedicationsTable();
     }
 
     public void initiateViewMenuProcedure() throws IOException {
@@ -70,8 +71,18 @@ public class AdminController extends GenericController {
         stage.show();
     }
 
+    @FXML
+    public void initiateModifyMedicationProcedure() {
+        Medication medication = medicationsTable.getSelectionModel().getSelectedItem();
+        MedicationDetailsController medicationDetailsController = new MedicationDetailsController(services, new Stage(), medication, this);
+        try {
+            medicationDetailsController.initiateModifyMedicationProcedure();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void initializeMedicationsTable() {
-        updateMedicationsModel();
         medicationsTable.setItems(medicationsModel);
         medicationsTable.setRowFactory(tv -> {
             TableRow<Medication> row = new TableRow<>();
@@ -95,6 +106,13 @@ public class AdminController extends GenericController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    public void handleDeleteMedication() {
+        Integer id = medicationsTable.getSelectionModel().getSelectedItem().getId();
+        services.deleteMedication(id);
+        refresh();
     }
 
     public void refresh() {

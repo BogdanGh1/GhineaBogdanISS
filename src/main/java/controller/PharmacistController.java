@@ -1,7 +1,6 @@
 package controller;
 
 import domain.entities.Order;
-import domain.entities.User;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -9,7 +8,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
@@ -20,7 +18,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 
-public class MedicalPersonnelController extends GenericController {
+public class PharmacistController extends GenericController {
 
     @FXML
     private TableView<Order> ordersTable;
@@ -32,19 +30,16 @@ public class MedicalPersonnelController extends GenericController {
     private TableColumn<Order, String> orderStatusColumn;
     @FXML
     private final Stage loginStage;
-    @FXML
-    private Label medicalSectionLabel;
     private final ObservableList<Order> ordersModel = FXCollections.observableArrayList();
 
-    public MedicalPersonnelController(User loggedUser, Services services, Stage stage, Stage loginStage) {
-        super(loggedUser, services, stage);
+    public PharmacistController(Services services, Stage stage, Stage loginStage) {
+        super(services, stage);
         this.loginStage = loginStage;
     }
 
     public void initialize() {
         updateOrdersModel();
         initializeOrdersTable();
-        medicalSectionLabel.setText(loggedUser.getSection());
     }
 
     @FXML
@@ -54,31 +49,20 @@ public class MedicalPersonnelController extends GenericController {
     }
 
     @FXML
-    public void initiatePlaceOrderProcedure() throws IOException {
-        NewOrderController newOrderController = new NewOrderController(loggedUser, services, new Stage(), stage, this);
-        newOrderController.initiatePlaceOrderProcedure();
-        stage.hide();
-    }
-
-    @FXML
-    public void handleCancelOrder() {
+    public void handleHonorOrder() {
         if (!ordersTable.getSelectionModel().isEmpty()) {
-            services.cancelOrder(ordersTable.getSelectionModel().getSelectedItem());
+            Order order = ordersTable.getSelectionModel().getSelectedItem();
+            services.honorOrder(order);
             refresh();
         }
     }
 
-    @FXML
-    public void initiateConfirmOrderProcedure() throws IOException {
-        if (!ordersTable.getSelectionModel().isEmpty()) {
-            Order order = ordersTable.getSelectionModel().getSelectedItem();
-            ConfirmOrderController confirmOrderController = new ConfirmOrderController(loggedUser, services, new Stage(), this, order);
-            confirmOrderController.initiateConfirmOrderProcedure();
-        }
+    public void refresh() {
+        updateOrdersModel();
     }
 
     public void initializeViewMenuProcedure() throws IOException {
-        URL path = this.getClass().getResource("../fxml/medical-personnel-menu.fxml");
+        URL path = this.getClass().getResource("../fxml/pharmacist-menu.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(path);
         fxmlLoader.setController(this);
 
@@ -88,12 +72,8 @@ public class MedicalPersonnelController extends GenericController {
         stage.show();
     }
 
-    public void refresh() {
-        updateOrdersModel();
-    }
-
     private void updateOrdersModel() {
-        ordersModel.setAll(services.getAllOrdersBySection(loggedUser.getSection()));
+        ordersModel.setAll(services.getAllOrders());
     }
 
     private void initializeOrdersTable() {
@@ -114,11 +94,11 @@ public class MedicalPersonnelController extends GenericController {
     }
 
     private void initiateViewOrderDetailsProcedure(Order order) {
-        OrderDetailsController orderDetailsController = new OrderDetailsController(loggedUser, services, new Stage(), order);
+        OrderDetailsController orderDetailsController = new OrderDetailsController(services, new Stage(), order);
         try {
             orderDetailsController.initiateViewOrderDetailsProcedure();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }
